@@ -238,12 +238,12 @@ expect_false <- function(current){
 
 #' @rdname expect_equal
 #'
-#' @param quiet \code{[logical]} suppress output printed by the \code{current} 
+#' @param quiet \code{[logical]} suppress output printed by the \code{current}
 #'        expression (see examples)
 #'
 #' @details
 #'
-#' \code{expect_silent} fails when an error or warning is thrown. 
+#' \code{expect_silent} fails when an error or warning is thrown.
 #'
 #' @examples
 #'
@@ -272,8 +272,8 @@ expect_silent <- function(current, quiet=TRUE){
       if (!has_nullfile) unlink(dumpfile)
     }
   })
-  
- 
+
+
   # try to evaluate 'current' if that doesn't work properly, store
   # error or warning message.
   result <- TRUE
@@ -281,10 +281,10 @@ expect_silent <- function(current, quiet=TRUE){
   type <- "none"
   tryCatch(current
     , error = function(e){
-        result <<- FALSE 
+        result <<- FALSE
         msg <<- e$message
         type <<- "An error"
-    } 
+    }
     , warning = function(w){
         result <<- FALSE
         msg <<- w$message
@@ -313,11 +313,11 @@ expect_error <- function(current, pattern=".*"){
   expr <- substitute(current)
   result <- FALSE
   diff <- "No Error"
-  
+
   # Resolves GH issue 4. When run in interactive mode, the
   # nr of frames is less than 2.
   n <- if (sys.nframe() >= 2) -2 else -1
-  e <- sys.frame(n) 
+  e <- sys.frame(n)
   tryCatch(eval(expr, envir=e), error=function(e){
             if (grepl(pattern, e$message)){
                 result <<- TRUE
@@ -334,7 +334,7 @@ expect_error <- function(current, pattern=".*"){
 #' @rdname expect_equal
 #' @export
 expect_warning <- function(current, pattern=".*"){
-  
+
   result <- FALSE
   expr <- substitute(current)
   diff <- "No Warning"
@@ -342,7 +342,7 @@ expect_warning <- function(current, pattern=".*"){
   # Resolves GH issue 4. When run in interactive mode, the
   # nr of frames is less than 2.
   n <- if (sys.nframe() >= 2) -2 else -1
-  e <- sys.frame(n) 
+  e <- sys.frame(n)
   withCallingHandlers(eval(expr, envir=e)
     , warning = function(w){
         if (grepl(pattern, w$message)){
@@ -435,10 +435,10 @@ add_RUnit_style <- function(e){
 #' \code{ignore} is a higher-order function: a function that returns another function.
 #' In particular, it accepts a function and returns a function that is almost identical
 #' to the input function. The only difference is that the return value of the function
-#' returned by \code{ignore} is not caught by \code{\link{run_test_file}} and friends. 
-#' For example, \code{ignore(expect_true)} is a function, and we can use it as 
+#' returned by \code{ignore} is not caught by \code{\link{run_test_file}} and friends.
+#' For example, \code{ignore(expect_true)} is a function, and we can use it as
 #' \code{ignore(expect_true)( 1 == 1)}. The return value of \code{ignore(expect_true)(1==1)}
-#' is exactly the same as that for \code{expect_true(1==1)}. 
+#' is exactly the same as that for \code{expect_true(1==1)}.
 #'
 #'
 #' @examples
@@ -462,16 +462,16 @@ ignore <- function(fun){
   }
 }
 
-# we need a special capture function for 
+# we need a special capture function for
 # Sys.setenv because it's return value does
-# not inlcude argument names (it is an unnamed 
+# not inlcude argument names (it is an unnamed
 # logical vector). We need the names to be able to
 # unset the env vars later on.
 capture_envvar <- function(fun, env){
   function(...){
     for ( x in names(list(...)) ){
-      # record the first occurrence so we capture the 
-      # original value 
+      # record the first occurrence so we capture the
+      # original value
       if ( !x %in% ls(envir=env) ) env[[x]] <- Sys.getenv(x)
     }
     out <- fun(...)
@@ -488,7 +488,7 @@ unset_envvar <- function(env){
 capture_options <- function(fun, env){
   function(...){
     out <- fun(...)
-    for ( x in names(out) ){ 
+    for ( x in names(out) ){
      # record only the first occurrence so we capture
      # the original value
      if (!x %in% ls(envir=env)) env[[x]] <- out[[x]]
@@ -518,13 +518,13 @@ reset_options <- function(env){
 #' of the statements express an \code{\link[=expect_equal]{expectation}}.
 #' \code{run_test_file} runs the file while gathering results of the
 #' expectations in a \code{\link{tinytests}} object.
-#' 
+#'
 #' @section User-defined side effects:
-#' 
+#'
 #' All calls to \code{\link[base]{Sys.setenv}} and \code{\link[base]{options}}
 #' defined in a test file are captured and undone once the test file has run.
-#' 
-#' 
+#'
+#'
 #'
 #' @note
 #' Not all terminals support ansi escape characters, so colorized output can be
@@ -572,7 +572,7 @@ run_test_file <- function( file
   oldwd <- getwd()
   ## Do we need to change working directory?
   wd_set <- length(dirname(file)) > 0
-  
+
   ## this will store the names of all environment
   ## variables created while running the file.
   envvar <- new.env()
@@ -618,7 +618,7 @@ run_test_file <- function( file
   ## add checkFoo equivalents of expect_foo
   if ( getOption("tt.RUnitStyle", TRUE) ) add_RUnit_style(e)
 
-  ## Reduce user side effects by making sure that any env var set 
+  ## Reduce user side effects by making sure that any env var set
   ## in a test file is unset after running it.
   e$Sys.setenv <- capture_envvar(Sys.setenv, envvar)
 
@@ -637,17 +637,13 @@ run_test_file <- function( file
     o$lst  <- src[[i]][3]
     o$call <- expr
     out  <- eval(expr, envir=e)
-
-    fmtstr <- if ( color ){
-      "\rRunning %s (%02d|\033[0;32m%02d\033[0m|\033[0;31m%02d\033[0m)"
-    } else {
-      "\rRunning %s (T%02d|P%02d|F%02d)"
-    }
-    catf(fmtstr, basename(file), o$ntest(), o$npass(), o$nfail() )
-
   }
+  catf("Running %s: %02d tests", basename(file)[1], o$ntest())
+  if (o$npass() > 0) catf(if (color) " \033[0;32m%02d pass\033[0m" else " %02d pass", o$npass())
+  if (o$nfail() > 0) catf(if (color) " \033[0;31m%02d fail\033[0m" else " %02d fail", o$nfail())
+
   catf("\n")
-  
+
 
   test_output <- o$gimme()
   structure(test_output, class="tinytests")
@@ -667,14 +663,14 @@ run_test_file <- function( file
 #' @param at_home \code{[logical]} toggle local tests.
 #' @param verbose \code{[logical]} toggle verbosity during execution
 #' @param color   \code{[logical]} toggle colorize output
-#' @param remove_side_effects \code{[logical]} toggle remove user-defined side 
+#' @param remove_side_effects \code{[logical]} toggle remove user-defined side
 #'  effects. Environment variables (\code{Sys.setenv()}) and options (\code{options()})
 #'  defined in a test file are reset before running the next test file (see details).
 #' @param lc_collate \code{[character]} Locale setting used to sort the
 #'  test files into the order of execution. The default \code{NA} ensures
 #'  current locale is used. Set this e.g. to \code{"C"} to ensure bytewise
 #'  and more platform-independent sorting (see details).
-#'  
+#'
 #' @section Details:
 #'
 #' We cannot guarantee that files will be run in any particular
@@ -724,7 +720,7 @@ run_test_dir <- function(dir="inst/tinytest", pattern="^test.*\\.[rR]"
 
   testfiles <- dir("./", pattern=pattern, full.names=TRUE)
   testfiles <- locale_sort(testfiles, lc_collate=lc_collate)
-  
+
 
 
   test_output <- list()
@@ -741,21 +737,21 @@ run_test_dir <- function(dir="inst/tinytest", pattern="^test.*\\.[rR]"
 }
 
 
-# Sort according to LC_COLLATE 
+# Sort according to LC_COLLATE
 locale_sort <- function(x, lc_collate=NA, ...){
   if (is.na(lc_collate)) return(sort(x,...))
 
   # catch current locale
   old_collate <- Sys.getlocale("LC_COLLATE")
 
-  # set to user-defined locale if possible, otherwise sort using current locale 
+  # set to user-defined locale if possible, otherwise sort using current locale
   colset <- tryCatch({
       Sys.setlocale("LC_COLLATE", lc_collate)
       TRUE
-    }, warning=function(e){ 
+    }, warning=function(e){
         msg <- sprintf("Could not sort test files in 'C' locale, using %s\n"
             , old_collate)
-        message(paste(msg, e$message,"\n")) 
+        message(paste(msg, e$message,"\n"))
         FALSE
     }, error=warning)
 
@@ -838,11 +834,11 @@ at_home <- function(){
 test_package <- function(pkgname, testdir = "tinytest", at_home=FALSE, ...){
   oldwd <- getwd()
   on.exit(setwd(oldwd))
-  require(pkgname, character.only=TRUE) 
+  require(pkgname, character.only=TRUE)
   testdir <- system.file(testdir, package=pkgname)
   setwd(testdir)
-  
-  out <- run_test_dir("./", at_home=at_home, ...) 
+
+  out <- run_test_dir("./", at_home=at_home, ...)
   i_fail <- sapply(out, isFALSE)
   if ( any(i_fail) ){
     msg <- paste( sapply(out[i_fail], format.tinytest, type="long"), collapse="\n")
